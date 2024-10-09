@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 const counterSchema = new mongoose.Schema({
-  entity: { type: String, required: true, unique: true },  // E.g., 'FACULTY', 'STUDENT', 'CLASS', 'QUIZ'
+  entity: { type: String, required: true, unique: true },
   seq: { type: Number, default: 0 }
 });
 

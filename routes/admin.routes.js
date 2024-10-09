@@ -14,22 +14,18 @@ router.post('/create', async (req, res) => {
     try {
         const { f_userName, f_Pwd } = req.body;
 
-        // Validate input
         if (!f_userName || !f_Pwd) {
             return res.status(400).json({ message: 'Username and password are required.' });
         }
 
-        // Hash the password before saving
-        const hashedPassword = await bcrypt.hash(f_Pwd, 10); // 10 is the salt rounds
+        const hashedPassword = await bcrypt.hash(f_Pwd, 10); 
 
-        // Generate f_sno using the counter logic
-        const f_sno = await generateCustomId('ADMIN'); // Call your custom ID generator
+        const f_sno = await generateCustomId('ADMIN'); 
 
-        // Create a new admin
         const newAdmin = new Admin({
-            f_sno, // Set the f_sno from the counter
+            f_sno, 
             f_userName,
-            f_Pwd: hashedPassword // Store the hashed password
+            f_Pwd: hashedPassword
         });
 
         await newAdmin.save();
@@ -46,29 +42,25 @@ router.post('/login', async (req, res) => {
     const f_Pwd = req.body.password; 
     
     try {
-      // Validate request body
       if (!f_userName || !f_Pwd) {
         return res.status(400).json({ message: 'Username and password are required' });
       }
       
-      // Find the admin by username
-      const admin = await Admin.findOne({ f_userName }); // Use findOne to get a single admin
+      const admin = await Admin.findOne({ f_userName }); 
       if (!admin) {
         return res.status(401).json({ message: 'Invalid username or password' });
       }
   
-      // Compare password
-      const isMatch = await bcrypt.compare(f_Pwd, admin.f_Pwd); // Compare with the correct admin
+      const isMatch = await bcrypt.compare(f_Pwd, admin.f_Pwd); 
       if (!isMatch) {
         return res.status(401).json({ message: 'Invalid username or password' });
       }
-  
-      // Generate JWT token
+
       const token = jwt.sign({ id: admin._id, f_userName: admin.userName }, process.env.JWT_SECRET, { expiresIn: '12h' });
       
       res.status(200).json({ token,f_userName, message: 'Login successful' });
     } catch (error) {
-      console.error(error); // Log the error for debugging
+      console.error(error); 
       res.status(500).json({ message: 'Server error', error });
     }
   });
@@ -87,29 +79,25 @@ router.post('/create-employees', verifyAdmin, async (req, res) => {
   const { f_Image, f_Name, f_Email, f_Mobile, f_Designation, f_gender, f_Course } = req.body;
 
   try {
-    // Validate request body
+
     if (!f_Image || !f_Name || !f_Email || !f_Mobile || !f_Designation || !f_gender || !f_Course) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-
-    // Convert f_Course back to an array if it's sent as a string (JSON.parse for the stringified array)
     const courses = Array.isArray(f_Course) ? f_Course : JSON.parse(f_Course);
 
-    // Check if the email already exists
     const existingEmployee = await Employee.findOne({ email: f_Email });
     if (existingEmployee) {
       return res.status(400).json({ message: 'Email already exists' });
     }
 
-    // Create a new employee
     const newEmployee = new Employee({
-      image: f_Image, // Firebase image URL
+      image: f_Image, 
       name: f_Name,
       email: f_Email,
       mobile: f_Mobile,
       designation: f_Designation,
       gender: f_gender,
-      course: courses, // Make sure course is an array
+      course: courses, 
     });
 
     await newEmployee.save();
@@ -119,7 +107,7 @@ router.post('/create-employees', verifyAdmin, async (req, res) => {
   }
 });
 
-// API to fetch all employees
+
 router.get('/employees', verifyAdmin, async (req, res) => {
   try {
     const employees = await Employee.find();
@@ -132,7 +120,7 @@ router.get('/employees', verifyAdmin, async (req, res) => {
 router.post('/get-employee', async (req, res) => {
   const { employeeId } = req.body;
   try {
-      const employee = await Employee.findById(employeeId); // Use the ID to find the employee
+      const employee = await Employee.findById(employeeId); 
       if (!employee) return res.status(404).json({ message: 'Employee not found' });
       res.json(employee);
   } catch (error) {
@@ -146,18 +134,15 @@ router.put('/edit-employee/:id', verifyAdmin, async (req, res) => {
   const { id: employeeId } = req.params;
   const { f_Image, f_Name, f_Email, f_Mobile, f_Designation, f_gender, f_Course } = req.body;
   try {
-      // Validate request body
       if (!f_Image && !f_Name && !f_Email && !f_Mobile && !f_Designation && !f_gender && !f_Course) {
           return res.status(400).json({ message: 'At least one field must be provided for update' });
       }
 
-      // Check if the employee exists
       const employee = await Employee.findById(employeeId);
       if (!employee) {
           return res.status(404).json({ message: 'Employee not found' });
       }
 
-      // Update employee details
       if (f_Image) employee.image = f_Image;
       if (f_Name) employee.name = f_Name;
       if (f_Email) {
@@ -188,10 +173,7 @@ router.delete('/delete-employees/:id', verifyAdmin, async (req, res) => {
 
 
   try {
-      // Find and delete the employee
       const result = await Employee.findByIdAndDelete(employeeId);
-
-      // Check if the employee was found and deleted
       if (!result) {
           return res.status(404).json({ message: 'Employee not found' });
       }

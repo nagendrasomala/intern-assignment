@@ -1,15 +1,15 @@
-const Admin = require('../models/admin.model'); // Import the Admin model
+const Admin = require('../models/admin.model');
 const dotenv = require('dotenv');
-const jwt = require('jsonwebtoken'); // JWT for token verification
+const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
-    const token = req.headers['authorization']; // Assuming token is sent in the Authorization header
+    const token = req.headers['authorization']; 
 
     if (!token) {
         return res.status(403).json({ message: 'No token provided' });
     }
 
-    // Remove "Bearer " from the token if it's present
+
     const bearerToken = token.startsWith('Bearer ') ? token.split(' ')[1] : token;
 
     jwt.verify(bearerToken, process.env.JWT_SECRET, (err, decoded) => {
@@ -17,10 +17,9 @@ const verifyToken = (req, res, next) => {
             return res.status(401).json({ message: 'Unauthorized: Invalid token' });
         }
 
-        // Attach decoded admin information to request object
-        req.adminId = decoded.f_userName; // The adminId from the token
-        req.adminMongoId = decoded.id; // The MongoDB ID from the token
-        next(); // Proceed to the next middleware or route handler
+        req.adminId = decoded.f_userName; 
+        req.adminMongoId = decoded.id; 
+        next(); 
     });
 };
 
